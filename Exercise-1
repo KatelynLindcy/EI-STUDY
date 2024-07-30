@@ -1,0 +1,121 @@
+import java.util.*;
+
+// Enum for directions
+enum Direction {
+    N, S, E, W
+}
+
+// Class for position
+class Position {
+    int x;
+    int y;
+
+    public Position(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+// Interface for commands
+interface Command {
+    void execute(Rover rover);
+}
+
+// Concrete command classes
+class MoveCommand implements Command {
+    public void execute(Rover rover) {
+        Position newPosition = new Position(rover.position.x, rover.position.y);
+        switch (rover.direction) {
+            case N:
+                newPosition.y += 1;
+                break;
+            case S:
+                newPosition.y -= 1;
+                break;
+            case E:
+                newPosition.x += 1;
+                break;
+            case W:
+                newPosition.x -= 1;
+                break;
+        }
+
+        if (newPosition.x >= 0 && newPosition.x < 10 && newPosition.y >= 0 && newPosition.y < 10 && !rover.obstacles.contains(newPosition)) {
+            rover.position = newPosition;
+        }
+    }
+}
+
+class LeftCommand implements Command {
+    public void execute(Rover rover) {
+        switch (rover.direction) {
+            case N:
+                rover.direction = Direction.W;
+                break;
+            case S:
+                rover.direction = Direction.E;
+                break;
+            case E:
+                rover.direction = Direction.N;
+                break;
+            case W:
+                rover.direction = Direction.S;
+                break;
+        }
+    }
+}
+
+class RightCommand implements Command {
+    public void execute(Rover rover) {
+        switch (rover.direction) {
+            case N:
+                rover.direction = Direction.E;
+                break;
+            case S:
+                rover.direction = Direction.W;
+                break;
+            case E:
+                rover.direction = Direction.S;
+                break;
+            case W:
+                rover.direction = Direction.N;
+                break;
+        }
+    }
+}
+
+// Rover class
+class Rover {
+    Position position;
+    Direction direction;
+    Set<Position> obstacles;
+
+    public Rover(Position position, Direction direction, Set<Position> obstacles) {
+        this.position = position;
+        this.direction = direction;
+        this.obstacles = obstacles;
+    }
+
+    public void executeCommands(List<Command> commands) {
+        for (Command command : commands) {
+            command.execute(this);
+        }
+    }
+
+    public String sendStatusReport() {
+        return "Rover is at (" + position.x + ", " + position.y + ") facing " + direction + ". No Obstacles detected.";
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Set<Position> obstacles = new HashSet<>();
+        obstacles.add(new Position(2, 2));
+        obstacles.add(new Position(3, 5));
+
+        Rover rover = new Rover(new Position(0, 0), Direction.N, obstacles);
+        List<Command> commands = Arrays.asList(new MoveCommand(), new MoveCommand(), new RightCommand(), new MoveCommand(), new LeftCommand(), new MoveCommand());
+        rover.executeCommands(commands);
+        System.out.println(rover.sendStatusReport());
+    }
+}
